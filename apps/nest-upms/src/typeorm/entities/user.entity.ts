@@ -1,8 +1,7 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { OrganizationEntity } from './organization.entity';
 import { PermissionEntity } from './permission.entity';
 import { RoleEntity } from './role.entity';
-export type IUserSex = 0 | 1 | 2
 @Entity({
     name: 'user'
 })
@@ -80,16 +79,9 @@ export class UserEntity {
 
     @Column({
         type: 'smallint',
-        // transformer: {
-        //     to: (sex: any) => {
-        //         return sex.toString();
-        //     },
-        //     from: (val: string) => {
-        //         return Number.parseInt(val);
-        //     }
-        // }
+        default: 0
     })
-    sex: IUserSex;
+    sex: number;
 
     @CreateDateColumn({
         type: 'timestamptz'
@@ -109,6 +101,17 @@ export class UserEntity {
     /**
      * 用户拥有的权限，一个用户可以有多个权限
      */
+    @ManyToMany(type => PermissionEntity, permission => permission.users)
+    @JoinTable({
+        name: 'user_permission',
+        joinColumn: {
+            name: 'user_id'
+        },
+        inverseJoinColumn:
+        {
+            name: 'name'
+        }
+    })
     permissions: PermissionEntity[];
     /**
      * 用户拥有的角色，一个用户可以分配多个角色
