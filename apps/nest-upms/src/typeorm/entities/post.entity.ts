@@ -9,7 +9,7 @@ export class PostEntity {
 
     @Column({
         type: 'varchar',
-        length: 20,
+        length: 100,
         comment: '业务标题'
     })
     title: string;

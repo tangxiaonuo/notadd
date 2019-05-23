@@ -12,7 +12,7 @@ describe('addonServiceImpl', () => {
         }).compile();
         app = module.createNestApplication();
         coreAdd = app.get(CoreAddon);
-        
+
         // const per1: ICoreAddonPermission = { name: 'one6', value: ['value'] };
         // const addon1: ICoreAddon = { name: 'addon6', permission: [per1] };
         // await coreAdd.install(addon1).then(res => {
@@ -31,6 +31,7 @@ describe('addonServiceImpl', () => {
         await coreAdd.install(addon2).then(res => {
             expect(res.code).toBe(1);
         })
+       
         await app.init();
     });
     /**
@@ -38,8 +39,8 @@ describe('addonServiceImpl', () => {
      */
     it(`install`, async () => {
         const permission = { name: 'one', value: ['value'] };
-        const addon: ICoreAddon = { name: 'addon3', permission: [permission]};
-        await coreAdd.install(addon).then(res=>{
+        const addon: ICoreAddon = { name: 'addon3', permission: [permission] };
+        await coreAdd.install(addon).then(res => {
             expect(res.code).toBe(1);
         })
     });
@@ -60,22 +61,22 @@ describe('addonServiceImpl', () => {
      */
     it(`insert`, async () => {
         const per: ICoreAddonPermission = { name: 'one1', value: ['value123'] };
-        const addon: ICoreAddon = { name: 'addon1', permission: [per] };       
+        const addon: ICoreAddon = { name: 'addon1', permission: [per] };
         await coreAdd.upgrade(addon).then(res => {
             expect(res.code).toBe(1);
         })
     });
 
-    // /**
-    //  * 如果有权限,就更新 
-    //  */
-    // it(`upgrade`, async () => {
-    //     const per: ICoreAddonPermission = { name: 'one', value: ['value'] };
-    //     const addon: ICoreAddon = { name: 'addon1', permission: [per] };
-    //     await coreAdd.upgrade(addon).then(res => {
-    //         expect(res.code).toBe(1);
-    //     });
-    // });
+    /**
+     * 如果有权限,就更新 
+     */
+    it(`upgrade`, async () => {
+        const per: ICoreAddonPermission = { name: 'one', value: ['value'] };
+        const addon: ICoreAddon = { name: 'addon1', permission: [per] };
+        await coreAdd.upgrade(addon).then(res => {
+            expect(res.code).toBe(1);
+        });
+    });
 
     /**
      * 查询所有权限,如果有多余的就删除

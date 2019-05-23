@@ -5,7 +5,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 })
 export class PostCategoryEntity {
     @PrimaryGeneratedColumn()
-    post_post_category_idid: number;
+    post_post_category_id: number;
 
     @Column({
         type: 'varchar',

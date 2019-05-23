@@ -114,9 +114,9 @@ export class AddonServiceImpl extends CoreAddon {
                 }               
             }
             //判断数据库中跟应用里面的权限是否相同,不相同的话,把多余的给删除了
-            // [1,2,3]  [3,2,4],数据库中的所有权限
             //循环已存在的权限
             for (let existPer of exist.permissions) {
+                
                 //判断权限是否在新增的数组里面
                 if( !addon.permission.includes(existPer)){
                     await this.addonPerRepo.delete(existPer);
