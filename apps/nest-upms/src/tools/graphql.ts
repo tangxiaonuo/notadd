@@ -1,15 +1,14 @@
-import { MethodDeclaration, SourceFile, InterfaceDeclaration, ParameterDeclaration, Project, MethodDeclarationStructure } from 'ts-morph'
-import { clearReturnType, transformType } from './util'
-
+import { MethodDeclaration, SourceFile, InterfaceDeclaration, ParameterDeclaration, Project, MethodDeclarationStructure, EnumDeclaration } from 'ts-morph'
+import { clearReturnType, transformGraphqlType, getDocs } from './util'
 export class GraphqlCreater {
-    private _query: Map<string, any> = new Map();
-    private _mutation: Map<string, any> = new Map();
-    private _subscription: Map<string, any> = new Map();
-    private _type: Map<string, InterfaceDeclaration> = new Map();
-    private _directive: Map<string, any> = new Map();
-    private _unions: Map<string, any> = new Map();
-    private _inputs: Map<string, InterfaceDeclaration> = new Map();
-
+    static _query: Map<string, MethodDeclarationStructure> = new Map();
+    static _mutation: Map<string, MethodDeclarationStructure> = new Map();
+    static _subscription: Map<string, MethodDeclarationStructure> = new Map();
+    static _type: Map<string, InterfaceDeclaration> = new Map();
+    static _directive: Map<string, any> = new Map();
+    static _unions: Map<string, any> = new Map();
+    static _inputs: Map<string, InterfaceDeclaration> = new Map();
+    static _enum: Map<string, EnumDeclaration> = new Map();
     createQuery(mth: MethodDeclaration, file: SourceFile, project: Project) {
         const structure = mth.getStructure() as MethodDeclarationStructure;
         const parameters = mth.getParameters();
@@ -18,22 +17,36 @@ export class GraphqlCreater {
             this.createInput(structure.type, par, file)
         });
         this.createType(structure.returnType, file)
-        this._query.set(structure.name, structure)
+        GraphqlCreater._query.set(structure.name, structure)
     }
+
     createInput(name: any, parameter: ParameterDeclaration, file: SourceFile) {
         name = clearReturnType(name)
         if (typeof name === 'string') {
             const inter = file.getInterface(name);
             if (inter) {
-                this._inputs.set(name, inter)
-            } else {
-                const type = file.getTypeAlias(name);
-                if (type) {
-                    const str = type.getStructure();
-                    const strs = (str.type as string).split('|').map(str => str.trim())
-                    strs.map(s => this.createType(s, file))
-                    this._unions.set(str.name, str);
-                }
+                GraphqlCreater._inputs.set(name, inter)
+                const properties = inter.getProperties();
+                properties.map(pro => {
+                    const struct = pro.getStructure();
+                    const type = struct.type as string;
+                    // 检查数组
+                    if (type.endsWith('[]')) {
+                        const tName = type.replace('[]', '')
+                        this.createInput(tName, parameter, file)
+                    } else if (type.indexOf('|')) {
+                        const types = type.split('|');
+                        types.map(t => {
+                            this.createInput(t, parameter, file)
+                        });
+                    } else {
+                        this.createInput(type, parameter, file)
+                    }
+                })
+            }
+            const _enum = file.getEnum(name);
+            if (_enum) {
+                GraphqlCreater._enum.set(name, _enum);
             }
         }
     }
@@ -42,15 +55,28 @@ export class GraphqlCreater {
         if (typeof name === 'string') {
             const inter = file.getInterface(name);
             if (inter) {
-                this._type.set(name, inter)
-            } else {
-                const type = file.getTypeAlias(name);
-                if (type) {
-                    const str = type.getStructure();
-                    const strs = (str.type as string).split('|').map(str => str.trim())
-                    strs.map(s => this.createType(s, file))
-                    this._unions.set(str.name, str);
-                }
+                GraphqlCreater._type.set(name, inter)
+                const properties = inter.getProperties();
+                properties.map(pro => {
+                    const struct = pro.getStructure();
+                    const type = struct.type as string;
+                    // 检查数组
+                    if (type.endsWith('[]')) {
+                        const tName = type.replace('[]', '')
+                        this.createType(tName, file)
+                    } else if (type.indexOf('|')) {
+                        const types = type.split('|');
+                        types.map(t => {
+                            this.createType(t, file)
+                        });
+                    } else {
+                        this.createType(type, file)
+                    }
+                })
+            }
+            const _enum = file.getEnum(name);
+            if (_enum) {
+                GraphqlCreater._enum.set(name, _enum);
             }
         }
     }
@@ -62,7 +88,7 @@ export class GraphqlCreater {
             this.createInput(structure.type, par, file)
         });
         this.createType(structure.returnType, file)
-        this._mutation.set(structure.name, structure)
+        GraphqlCreater._mutation.set(structure.name, structure)
     }
     createSubscription(mth: MethodDeclaration, file: SourceFile, project: Project) {
         const structure = mth.getStructure() as MethodDeclarationStructure;
@@ -72,9 +98,9 @@ export class GraphqlCreater {
             this.createInput(structure.type, par, file)
         });
         this.createType(structure.returnType, file)
-        this._subscription.set(structure.name, structure)
+        GraphqlCreater._subscription.set(structure.name, structure)
     }
-    create(): string {
+    static create(): string {
         let query = ``, type = ``, mutation = ``, subscription = ``, unions = ``, input = ``;
         if (this._query.size > 0) {
             query = createQuery(this._query);
@@ -94,7 +120,7 @@ export class GraphqlCreater {
         if (this._inputs) {
             input = createInput(this._inputs)
         }
-        return `${type}\n${input}\n${unions}\n${query}\n${mutation}\n${subscription}\n`;
+        return `${createEnum(this._enum)}\n${type}\n${input}\n${unions}\n${query}\n${mutation}\n${subscription}\n`;
     }
 }
 
@@ -109,14 +135,29 @@ function createUnion(_unions: Map<string, any>) {
     });
     return code;
 }
+
+function createEnum(_enum: Map<string, EnumDeclaration>) {
+    let code = ``;
+    _enum.forEach((e, name) => {
+        const eSt = e.getStructure();
+        code += `${getDocs(eSt)}enum ${name} {\n`
+        const members = e.getMembers();
+        members.map((m, index) => {
+            const struct = m.getStructure();
+            code += `${getDocs(struct)}\t${struct.name}\n`
+        });
+        code += `}\n`
+    });
+    return code;
+}
 /**
  * subscription
  * @param _subscription 
  */
-function createSubscription(_subscription: Map<string, any>) {
+function createSubscription(_subscription: Map<string, MethodDeclarationStructure>) {
     let code = `type Subscription{\n`;
     _subscription.forEach(sub => {
-        code += `\t${sub.name}`
+        code += `\t${getDocs(sub)}\t${sub.name}`
         const parameters = sub.parameters;
         if (parameters.length > 0) {
             code += `(`
@@ -141,10 +182,10 @@ function createSubscription(_subscription: Map<string, any>) {
  * mutation
  * @param _mutation 
  */
-function createMutation(_mutation: Map<string, any>) {
+function createMutation(_mutation: Map<string, MethodDeclarationStructure>) {
     let code = `type Mutation{\n`;
     _mutation.forEach(muta => {
-        code += `\t${muta.name}`
+        code += `${getDocs(muta, true)}\t${muta.name}`
         const parameters = muta.parameters;
         if (parameters.length > 0) {
             code += `(`
@@ -173,47 +214,47 @@ function createInput(_type: Map<string, InterfaceDeclaration>) {
     return createType(_type, 'input')
 }
 
-
 function createType(_type: Map<string, InterfaceDeclaration>, typeName: 'type' | 'input' = 'type') {
     let code = ``;
     _type.forEach((item, name) => {
         code += `\n`;
-        code += `${typeName} ${name}{\n`;
+        const itemS = item.getStructure();
+        code += `${getDocs(itemS)}\n${typeName} ${name}{\n`;
         let properties = item.getProperties();
         properties.map(pro => {
             const struct = pro.getStructure();
-            code += `\t${struct.name}: `;
+            code += `${getDocs(struct, true)}\t${struct.name}: `;
             if (struct.type === 'string') {
-                code += `String`
+                code += `String`;
             } else if (struct.type === 'number') {
-                code += `Int`
+                code += `Int`;
             } else if (struct.type === 'boolean') {
-                code += `Boolean`
+                code += `Boolean`;
             } else if (struct.type === 'Float') {
-                code += `Float`
+                code += `Float`;
             } else if (struct.type === 'ID') {
-                code += `ID`
+                code += `ID`;
             } else if ((struct.type as string).endsWith('[]')) {
-                const tName = (struct.type as string).replace('[]', '')
-                code += `[${transformType(tName)}]`
+                const tName = (struct.type as string).replace('[]', '');
+                code += `[${transformGraphqlType(tName)}]`;
             } else {
-                debugger;
+                code += struct.type;
             }
             if (!struct.hasQuestionToken) {
-                code += `!`
+                code += `!`;
             }
-            code += `\n`
+            code += `\n`;
         })
         code += `}`;
     });
     return code;
 }
 
-function createQuery(_query: Map<string, any>): string {
+function createQuery(_query: Map<string, MethodDeclarationStructure>): string {
     // query
     let code = `type Query {\n`;
     _query.forEach((query: MethodDeclarationStructure) => {
-        code += `\t${query.name}`
+        code += `\t${getDocs(query)}\t${query.name}`
         const parameters = query.parameters;
         if (parameters.length > 0) {
             code += `(`

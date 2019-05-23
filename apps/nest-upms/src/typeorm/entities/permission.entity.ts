@@ -1,7 +1,7 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, Index, JoinTable } from 'typeorm'
+import { Column, CreateDateColumn, Entity, Index, JoinTable, ManyToMany, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { AddonEntity } from './addon.entity';
-import { UserEntity } from './user.entity';
 import { RoleEntity } from './role.entity';
+import { UserEntity } from './user.entity';
 
 /**
  * 应用权限表
@@ -85,7 +85,7 @@ export class PermissionEntity {
         default: 0
     })
     @Index()
-    status: -1 | 0 | 1;
+    status: number;
 
     /**
      * 排序
@@ -102,7 +102,7 @@ export class PermissionEntity {
     @CreateDateColumn({
         type: 'timestamptz'
     })
-    create_time: Date = new Date();
+    create_time: Date;
 
     /**
      * 更新时间
@@ -110,7 +110,7 @@ export class PermissionEntity {
     @UpdateDateColumn({
         type: 'timestamptz'
     })
-    update_time: Date = new Date();
+    update_time: Date;
 
     /**
      * 应用id
@@ -137,7 +137,9 @@ export class PermissionEntity {
     /**
      * 拥有此权限的所有用户
      */
-    users: UserEntity[] = [];
+    @ManyToMany(type => UserEntity, user => user.permissions)
+    users: UserEntity[];
+
     /**
      * 拥有此权限的所有角色
      */

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth';
 import baseInfoProviders from './baseInfo';
 import casbinProviders from './casbin/providers';
@@ -10,38 +9,26 @@ import { GraphqlOptions } from './graphql.options';
 import { ssoProviders } from './sso';
 import { JwtStrategyImpl } from './sso/jwt.strategy.impl';
 import { SsoResolver } from './sso/sso.resolver';
-import allEntities from './typeorm'
+import { InstallResolver } from './install/services/install.service';
+// GqlModuleOptions
 @Module({
   imports: [
-    AuthModule.forRoot(JwtStrategyImpl),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'test_ci',
-      entities: [
-        ...allEntities
-      ],
-      synchronize: true,
-    }),
+    // AuthModule.forRoot(JwtStrategyImpl),
     GraphQLModule.forRootAsync({
       useClass: GraphqlOptions,
-    }),
-    TypeOrmModule.forFeature([
-      ...allEntities
-    ])
+    })
   ],
   controllers: [
-    SsoResolver
+    // SsoResolver,
+    // InstallResolver
   ],
   providers: [
-    ...coreProviders,
+    // InstallResolver,
+    // ...coreProviders,
     ...ssoProviders,
-    ...baseInfoProviders,
-    ...commonServicesProviders,
-    ...casbinProviders
+    // ...baseInfoProviders,
+    // ...commonServicesProviders,
+    // ...casbinProviders
   ]
 })
 export class ApplicationModule { }
