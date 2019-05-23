@@ -1,17 +1,17 @@
-import { RoleService } from '../../../../src/baseInfo/core';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { ApplicationModule, RoleEntity } from '../../../../src';
+import { RoleServiceIpml } from '../../../../src/baseInfo/services/role.service.impl';
 
 describe('RoleServiceImpl', () => {
     let app: INestApplication;
-    let roleService: RoleService;
+    let roleService: RoleServiceIpml;
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [ApplicationModule]
         }).compile();
         app = module.createNestApplication();
-        roleService = app.get(RoleService);
+        roleService = app.get(RoleServiceIpml);
 
         async function add(i: number) {
             const role = new RoleEntity();
@@ -44,38 +44,38 @@ describe('RoleServiceImpl', () => {
     /**
      * 测试异常
      */
-    it(`delete.throw.DataError`, async () => {
-        await roleService.delete({ title: 'iphone' }).then(res => {
-            expect(res.affected).toEqual(1)
-        }).catch(e => {
-            expect(e instanceof Error).toEqual(true);
-        });
-    });
+    // it(`delete.throw.DataError`, async () => {
+    //     await roleService.delete({ title: 'iphone' }).then(res => {
+    //         expect(res.affected).toEqual(1)
+    //     }).catch(e => {
+    //         expect(e instanceof Error).toEqual(true);
+    //     });
+    // });
 
-    it(`save`, async () => {
-        /** 修改角色 */
-        /** 创建更新的一个应用 */
-        let role: RoleEntity = new RoleEntity();
-        role.name = 'wzry';
-        role.title = 'hpjy';
-        role.description = 'dddd';
-        role.create_time = new Date();
-        role.update_time = new Date();
-        //从数据库获取一个应用
-        await roleService.save(role, { title: 'boss' }).then(res => {
-            expect(res.title).toBe('hpjy');
-        }).catch(e => {
-            expect(e instanceof Error).toEqual(true)
-        });
-    });
+    // it(`save`, async () => {
+    //     /** 修改角色 */
+    //     /** 创建更新的一个应用 */
+    //     let role: RoleEntity = new RoleEntity();
+    //     role.name = 'wzry';
+    //     role.title = 'hpjy';
+    //     role.description = 'dddd';
+    //     role.create_time = new Date();
+    //     role.update_time = new Date();
+    //     //从数据库获取一个应用
+    //     await roleService.save(role, { title: 'boss' }).then(res => {
+    //         expect(res.title).toBe('hpjy');
+    //     }).catch(e => {
+    //         expect(e instanceof Error).toEqual(true)
+    //     });
+    // });
 
-    it(`get`, async () => {
-        await roleService.get({ name: 'role1' }).then(res => {
-            expect(res.name).toEqual(`role1`);
-        }).catch(e => {
-            expect(e instanceof Error).toEqual(true)
-        });
-    });
+    // it(`get`, async () => {
+    //     await roleService.get({ name: 'role1' }).then(res => {
+    //         expect(res.name).toEqual(`role1`);
+    //     }).catch(e => {
+    //         expect(e instanceof Error).toEqual(true)
+    //     });
+    // });
 
     afterAll(async () => {
         await app.close();

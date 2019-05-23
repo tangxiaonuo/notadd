@@ -23,7 +23,7 @@ export default [{
     provide: UserService,
     useClass: UserServiceImpl
 }, {
-    provide: RoleService,
+    provide: RoleServiceIpml,
     useClass: RoleServiceIpml
 },{
     provide: OrganizationService,

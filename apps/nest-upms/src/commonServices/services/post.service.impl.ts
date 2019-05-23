@@ -12,12 +12,9 @@ export class PostServiceImpl extends PostService {
      * 插入一条数据
      * @param post 
      */
-    insert(post: PostEntity): Promise<PostEntity> {
-        if(){
-
-            throw new Error("Method not implemented.");
-        }
-        return await this.postRepo.save(post);
+     insert(post: PostEntity): Promise<PostEntity> {
+        
+      return  this.postRepo.save (post);
     }
     /**
      * 查询一条数据
