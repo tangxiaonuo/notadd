@@ -1,7 +1,5 @@
 
 import { RoleEntity, PermissionEntity, UserEntity } from '../../typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SaveOptions } from 'typeorm';
 import { DataError, RoleNoExistError, ServerError } from '../errors/role.error';
 import {prisma, RoleEntityCreateInput, } from '../../prisma';
 import { asap } from 'rxjs/internal/scheduler/asap';

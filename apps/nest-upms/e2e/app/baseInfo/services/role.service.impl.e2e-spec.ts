@@ -20,7 +20,7 @@ describe('RoleServiceImpl', () => {
             role.description = 'ddd' + i;
             role.create_time = new Date();
             role.update_time = new Date();
-            await roleService.insert(role).then((result) => { }).catch(e => { });
+            await roleService.insert().then((result) => { }).catch(e => { });
         }
         for (let i = 0; i < 10; i++) {
             await add(i)
@@ -29,7 +29,7 @@ describe('RoleServiceImpl', () => {
     })
 
     it(`insert`, async () => {
-        const role = new RoleEntity();
+        const role = new 
         role.name = 'role1';
         role.title = 'iphone';
         role.description = 'ddd';
