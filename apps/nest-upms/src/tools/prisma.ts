@@ -1,5 +1,5 @@
 import { ClassDeclaration, SourceFile, InterfaceDeclaration, EnumDeclaration, PropertyDeclaration, Project } from 'ts-morph'
-import { getDocs, clearReturnType, transformGraphqlType, isUpdateDateColumn, isPrimaryGeneratedColumn, isPrimaryColumn, isCreateDateColumn } from './util'
+import { getDocs, clearReturnType, isOneToMany, isManyToOne, isManyToMany, isOneToOne, transformGraphqlType, isUpdateDateColumn, isPrimaryGeneratedColumn, isPrimaryColumn, isCreateDateColumn } from './util'
 export class PrismaItem {
     private _columns: Map<string, PropertyDeclaration> = new Map();
     private _enum: Map<string, EnumDeclaration> = new Map();
@@ -59,10 +59,13 @@ export class PrismaItem {
         code += createEnum(this._enum);
         code += createType(this._type)
         code += `${getDocs(struct)}type ${this.name}{\n`;
+        let tableName = ''
+        let isArray = false;
         this._columns.forEach(column => {
             const struct = column.getStructure();
             code += `${getDocs(struct, true)}\t${struct.name}: `;
             const decorators = column.getDecorators()
+            tableName = struct.type as string;
             if (struct.type === 'string') {
                 code += `String`;
             } else if (struct.type === 'number') {
@@ -82,6 +85,8 @@ export class PrismaItem {
             } else if ((struct.type as string).endsWith('[]')) {
                 const tName = (struct.type as string).replace('[]', '');
                 code += `[${transformGraphqlType(tName)}]`;
+                tableName = transformGraphqlType(tName);
+                isArray = true;
             } else if ((struct.type as string).includes('|')) {
                 throw new Error(`不支持 ${struct.type} 这种格式的数据，请使用简单类型`)
             } else {
@@ -90,6 +95,7 @@ export class PrismaItem {
             if (!struct.hasQuestionToken) {
                 code += `!`;
             }
+
             code += ` `
             if (isPrimaryGeneratedColumn(decorators)) {
                 code += `@id`
@@ -99,6 +105,14 @@ export class PrismaItem {
                 code += `@createdAt`
             } else if (isUpdateDateColumn(decorators)) {
                 code += `@updatedAt`
+            } else if (isOneToOne(decorators)) {
+                code += `@relation(link: INLINE name: "${tableName}")`
+            } else if (isManyToMany(decorators)) {
+                code += `@relation(link: TABLE name: "${tableName}")`
+            } else if (isOneToMany(decorators)) {
+                code += `@relation(link: TABLE name: "${tableName}")`
+            } else if (isManyToOne(decorators)) {
+                code += `@relation(link: INLINE name: "${tableName}")`
             }
             code += `\n`;
         })
