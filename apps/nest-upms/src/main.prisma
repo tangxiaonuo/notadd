@@ -186,7 +186,7 @@ type PostEntity{
 	update_time: DateTime! @updatedAt
 }
 type PostCategoryEntity{
-	post_post_category_idid: ID! @id
+	post_post_category_id: ID! @id
 	title: String! 
 	icon: String! 
 	description: String! 

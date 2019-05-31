@@ -1,40 +1,39 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { ApplicationModule, RoleEntity } from '../../../../src';
-import { RoleServiceIpml } from '../../../../src/baseInfo/services/role.service.impl';
+import { RoleServiceImpl } from '../../../../src/baseInfo/services/role.service.impl';
 
 describe('RoleServiceImpl', () => {
     let app: INestApplication;
-    let roleService: RoleServiceIpml;
+    let roleService: RoleServiceImpl;
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [ApplicationModule]
         }).compile();
         app = module.createNestApplication();
-        roleService = app.get(RoleServiceIpml);
+        roleService = app.get(RoleServiceImpl);
 
-        async function add(i: number) {
-            const role = new RoleEntity();
-            role.name = 'role' + i;
-            role.title = 'iphone' + i;
-            role.description = 'ddd' + i;
-            role.create_time = new Date();
-            role.update_time = new Date();
-            await roleService.insert().then((result) => { }).catch(e => { });
-        }
-        for (let i = 0; i < 10; i++) {
-            await add(i)
-        }
+        // async function add(i: number) {
+        //     const role ={
+        //         name : 'role' + i,
+        //         title : 'iphone' + i,
+        //         description : 'ddd' + i,
+                
+        //     }
+        //     await roleService.insert(role ).then((result) => { }).catch(e => { });
+        // }
+        // for (let i = 0; i < 10; i++) {
+        //     await add(i)
+        // }
         await app.init();
     })
 
     it(`insert`, async () => {
-        const role = new 
-        role.name = 'role1';
-        role.title = 'iphone';
-        role.description = 'ddd';
-        role.create_time = new Date();
-        role.update_time = new Date();
+        const role ={
+            name: 'role1',
+            title: 'iphone1',
+            description : 'ddd',
+        }
         await roleService.insert(role).then((result) => {
             expect(result.name).toEqual('role1');
         }).catch(e => {

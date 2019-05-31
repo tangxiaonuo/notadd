@@ -2,9 +2,8 @@
 import { RoleEntity, PermissionEntity, UserEntity } from '../../typeorm';
 import { DataError, RoleNoExistError, ServerError } from '../errors/role.error';
 import {prisma, RoleEntityCreateInput, } from '../../prisma';
-import { asap } from 'rxjs/internal/scheduler/asap';
 
-export class RoleServiceIpml {
+export class RoleServiceImpl {
     // constructor(private readonly prisma: Prisma) { 
     //     prisma = this.prisma;
     //  }

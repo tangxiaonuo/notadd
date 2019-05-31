@@ -12,3 +12,4 @@ services:
       POSTGRES_DB: test_ci
 volumes:
   postgres:
+#河南冠杰智能科技股份有限公司   郑州市管城回族区 凯利国际中心A座1218 841  60673333

@@ -15,6 +15,7 @@ services:
             connector: postgres
             host: 192.168.1.146
             database: test_ci
+
             schema: public
             user: postgres
             password: postgres
@@ -22,3 +23,4 @@ services:
             rawAccess: true
             port: '5432'
             migrations: false
+            

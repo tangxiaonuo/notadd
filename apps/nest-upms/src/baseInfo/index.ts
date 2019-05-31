@@ -7,7 +7,7 @@ import { UserService } from './core/user.service'
 import { AddonServiceImpl } from './services/addon.service.impl';
 import { PermissionServiceImpl } from './services/permission.service.impl';
 import { UserServiceImpl } from './services/user.service.impl';
-import { RoleServiceIpml } from './services/role.service.impl';
+import {  RoleServiceImpl } from './services/role.service.impl';
 import { OrganizationServiceImpl } from './services/organization.service.impl';
 import { LoggerService } from './core/logger.service';
 import { LoggerServiceImpl } from './services/logger.service.impl';
@@ -25,10 +25,12 @@ export default [
     provide: UserServiceImpl,
     useClass: UserServiceImpl
 }, 
-// {
-//     provide: RoleService,
-//     useClass: RoleServiceIpml
-// },{
+
+{
+    provide: RoleServiceImpl,
+    useClass: RoleServiceImpl
+},
+//{
 //     provide: OrganizationService,
 //     useClass: OrganizationServiceImpl
 // },{
